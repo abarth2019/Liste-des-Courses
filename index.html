@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Liste de courses</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 10px;
+      font-size: 14px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .category {
+      flex: 1 1 45%;
+      margin-bottom: 20px;
+    }
+    .category h2 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .item input[type="number"] {
+      width: 40px;
+      margin-left: auto;
+    }
+    .item label {
+      margin-left: 8px;
+      flex: 1;
+    }
+    button {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    @media print {
+      button, input[type="checkbox"], input[type="number"] {
+        display: none;
+      }
+      body {
+        font-size: 10px;
+      }
+      .item label::before {
+        content: "\2610 "; /* case vide imprimable */
+      }
+      .container {
+        display: block;
+        column-count: 2;
+        column-gap: 20px;
+      }
+      .category {
+        break-inside: avoid;
+        margin-bottom: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Liste de Courses</h1>
+  <div class="container" id="listeCourses"></div>
+  <button onclick="window.print()">Générer PDF Imprimable</button>
+
+  <script>
+    const produits = {
+      "Boulangerie": ["Oeuf", "Baguette", "Pain de mie", "Pain céréal", "Goffre", "Petit pain", "Croissant"],
+      "Petit Déjeuner": ["bonbons", "gateaux PDJ", "Café", "soupe", "sandwich"],
+      "Boissons": ["Sirop", "Soda canette", "jus de fruits", "crémant", "eaux minérale", "Champagne"],
+      "Charcuterie": ["Jambon", "Lardons", "Knacks", "Saucisse"],
+      "Conserves & Légumes": ["Rataouille", "Champignons", "petit-pois carottes", "petit-pois", "haricots vertes", "haricots beurre", "Maïs"],
+      "Epicerie": ["Sel fin", "Sel gros 1kg", "Vinaigre blanc", "VInaigre balsamique", "Vinaigre salade", "Huile olive", "Huile tournesol", "Persil", "Basilique", "Herbes Provence", "Poivre", "sauce tomate", "Ketchup", "Mayonnaise", "Andalouse", "Samourai", "Moutarde", "Confiture", "Nutella", "Pois cassées", "Lentilles"],
+      "Fruits": ["Pomme", "banane", "kiwi"],
+      "Féculents": ["Spaghetti", "Pates", "Riz", "Späetzle", "purée", "semoule", "Gnocci"],
+      "Produits Frais": ["Crème Fraiche", "Beurre", "Margarine", "Yaourt", "Yaourt á boire", "Kiri", "Lait", "Fromage blanc", "Fromage rapé"],
+      "Hygiène": ["gel douche", "Dentifrice", "brosse à dent", "gel á raser", "déo", "shampooing + après s.", "PQ", "mouchoir", "serviette H. + tampons + lingette", "lakk"],
+      "Légumes Frais": ["Brocoli", "Carottes", "Courgettes", "Oignons", "Pommes de terre", "Salade verte", "Avocat", "Citron", "Citron vert", "pdt douce", "pdt", "concombre", "Tomate", "Potirons"],
+      "Entretien": ["Produit vitre", "Produit WC", "Produit dégraiss.", "Liquide vaisselle", "Produit sol", "Lingettes", "Eponge X3", "Lavette X3", "Lessive", "Sacs poubelle 50 L", "Sacs poubelle 10L", "éponge", "liquide rincage", "Sel lave-vaisselle", "Tablette lave-vaisselle"],
+      "Surgelés": ["Pommes risolées 1kg", "Frites", "Potetoes", "Épinards", "Crocquette ABC"],
+      "Viande": ["Viande", "Volaille - escalope", "Volaile - éguilettes", "Porc", "Boeuf", "Viande hachée", "Veau", "Cordons Bleus ind.", "Dinde"]
+    };
+
+    const container = document.getElementById("listeCourses");
+
+    for (const [categorie, items] of Object.entries(produits)) {
+      const section = document.createElement("div");
+      section.className = "category";
+      const title = document.createElement("h2");
+      title.textContent = categorie;
+      section.appendChild(title);
+
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.onchange = () => {
+          quantityInput.disabled = !checkbox.checked;
+        };
+
+        const label = document.createElement("label");
+        label.textContent = item;
+
+        const quantityInput = document.createElement("input");
+        quantityInput.type = "number";
+        quantityInput.value = 1;
+        quantityInput.min = 1;
+        quantityInput.disabled = true;
+
+        div.appendChild(checkbox);
+        div.appendChild(label);
+        div.appendChild(quantityInput);
+        section.appendChild(div);
+      });
+
+      container.appendChild(section);
+    }
+  </script>
+</body>
+</html>
