@@ -1,135 +1,223 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Liste de courses</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liste de Courses</title>
   <style>
-    * {
-      box-sizing: border-box;
+    :root {
+      --bg:#f9f9fb;
+      --card:#ffffff;
+      --radius:12px;
+      --shadow:0 8px 24px rgba(0,0,0,0.04);
+      --border:1px solid #e5e7eb;
+      --accent:#2563eb;
+      --text:#1f2d3a;
+      --radius-sm:6px;
     }
+    *{box-sizing:border-box;}
     body {
-      font-family: Arial, sans-serif;
-      margin: 10px;
-      font-size: 14px;
+      margin:0;
+      padding:1rem 1rem 3rem;
+      background:var(--bg);
+      font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      color: var(--text);
+      line-height:1.35;
+      font-size:14px;
+      -webkit-print-color-adjust:exact;
     }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-    .category {
-      flex: 1 1 45%;
-      margin-bottom: 20px;
-    }
-    .category h2 {
-      font-size: 16px;
-      margin-bottom: 10px;
-      border-bottom: 1px solid #ccc;
-    }
-    .item {
-      display: flex;
-      align-items: center;
-      margin-bottom: 5px;
-    }
-    .item input[type="number"] {
-      width: 40px;
-      margin-left: auto;
-    }
-    .item label {
-      margin-left: 8px;
-      flex: 1;
-    }
-    button {
-      display: block;
-      margin: 20px auto;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
+    h1 {margin:0 0 0.5rem; font-size:1.5rem; font-weight:600;}
+    h2 {margin:1rem 0 0.25rem; font-size:1rem; font-weight:600; display:flex; justify-content:space-between; align-items:center;}
+    .controls {display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem;}
+    .btn {padding:0.5rem 1rem; border:none; cursor:pointer; border-radius:8px; font-weight:600; display:inline-flex; gap:4px; align-items:center;}
+    .btn-primary {background:var(--accent); color:#fff;}
+    .btn-secondary {background:#fff; border:1px solid #d1d5db;}
+    .btn-sm {padding:0.25rem 0.75rem; font-size:12px;}
+    .list-wrapper {max-width:900px; margin:0 auto;}
+    .category {background:var(--card); padding:12px 16px; border-radius:var(--radius); box-shadow:var(--shadow); margin-bottom:1rem;}
+    .category-header {display:flex; justify-content:space-between; align-items:center;}
+    .items {margin-top:4px;}
+    .item {display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid #f0f2f5;}
+    .item:last-child {border-bottom:none;}
+    .checkbox-wrapper {position:relative;}
+    .checkbox {appearance:none; width:18px; height:18px; border:2px solid #cbd5e1; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:all .15s;}
+    .checkbox:checked {background:var(--accent); border-color:var(--accent);}
+    .checkbox:checked::after {content:''; width:6px; height:10px; border:2px solid #fff; border-top:none; border-left:none; transform:rotate(45deg); display:inline-block;}
+    .item-label {flex:1; font-size:0.95rem;}
+    .qty {width:50px; display:flex; align-items:center; gap:4px;}
+    .qty input {width:3ch; border:1px solid #d1d5db; border-radius:6px; text-align:center; padding:4px; font-size:0.9rem;}
+    .small {font-size:12px; color:#6b7280;}
+    .divider {height:1px; background:#e8ebf0; margin:1rem 0;}
+    footer {position:fixed; bottom:0; left:0; right:0; padding:10px 1rem; background:#fff; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;}
+    .reset {background:transparent; border:1px solid #e2e8f0;}
     @media print {
-      button, input[type="checkbox"], input[type="number"] {
-        display: none;
-      }
-      body {
-        font-size: 10px;
-      }
-      .item label::before {
-        content: "\2610 "; /* case vide imprimable */
-      }
-      .container {
-        display: block;
-        column-count: 2;
-        column-gap: 20px;
-      }
-      .category {
-        break-inside: avoid;
-        margin-bottom: 15px;
-      }
+      :root {color-adjust: exact;}
+      body {background:#fff; padding:6mm;}
+      .category {box-shadow:none; page-break-inside:avoid; border:none;}
+      footer, .btn {display:none;}
+      h1 {font-size:1.2rem;}
+      .item {gap:6px;}
+      .checkbox {width:16px; height:16px;}
+      .qty input {width:2.5ch;}
+      .category {margin-bottom:0.75rem;}
+      @page {size:A5; margin:8mm;}
+    }
+    /* responsive small */
+    @media (max-width:800px){
+      .list-wrapper {padding:0;}
     }
   </style>
 </head>
 <body>
-  <h1>Liste de Courses</h1>
-  <div class="container" id="listeCourses"></div>
-  <button onclick="window.print()">Générer PDF Imprimable</button>
+  <div class="list-wrapper">
+    <h1>Liste de Courses</h1>
+    <div class="controls">
+      <button class="btn btn-primary" onclick="window.print()">Générer PDF imprimable</button>
+      <button class="btn btn-secondary" onclick="resetAll()">Effacer la sélection</button>
+    </div>
+    <div id="list"></div>
+  </div>
+  <footer><div class="small">Checklist imprimable, A5 (plier A4 en 4) · Sélection sauvegardée localement</div><div><button class="btn btn-sm" onclick="selectAll(true)">Tout cocher</button><button class="btn btn-sm" onclick="selectAll(false)">Tout décocher</button></div></footer>
 
   <script>
-    const produits = {
-      "Boulangerie": ["Oeuf", "Baguette", "Pain de mie", "Pain céréal", "Goffre", "Petit pain", "Croissant"],
-      "Petit Déjeuner": ["bonbons", "gateaux PDJ", "Café", "soupe", "sandwich"],
-      "Boissons": ["Sirop", "Soda canette", "jus de fruits", "crémant", "eaux minérale", "Champagne"],
-      "Charcuterie": ["Jambon", "Lardons", "Knacks", "Saucisse"],
-      "Conserves & Légumes": ["Rataouille", "Champignons", "petit-pois carottes", "petit-pois", "haricots vertes", "haricots beurre", "Maïs"],
-      "Epicerie": ["Sel fin", "Sel gros 1kg", "Vinaigre blanc", "VInaigre balsamique", "Vinaigre salade", "Huile olive", "Huile tournesol", "Persil", "Basilique", "Herbes Provence", "Poivre", "sauce tomate", "Ketchup", "Mayonnaise", "Andalouse", "Samourai", "Moutarde", "Confiture", "Nutella", "Pois cassées", "Lentilles"],
-      "Fruits": ["Pomme", "banane", "kiwi"],
-      "Féculents": ["Spaghetti", "Pates", "Riz", "Späetzle", "purée", "semoule", "Gnocci"],
-      "Produits Frais": ["Crème Fraiche", "Beurre", "Margarine", "Yaourt", "Yaourt á boire", "Kiri", "Lait", "Fromage blanc", "Fromage rapé"],
-      "Hygiène": ["gel douche", "Dentifrice", "brosse à dent", "gel á raser", "déo", "shampooing + après s.", "PQ", "mouchoir", "serviette H. + tampons + lingette", "lakk"],
-      "Légumes Frais": ["Brocoli", "Carottes", "Courgettes", "Oignons", "Pommes de terre", "Salade verte", "Avocat", "Citron", "Citron vert", "pdt douce", "pdt", "concombre", "Tomate", "Potirons"],
-      "Entretien": ["Produit vitre", "Produit WC", "Produit dégraiss.", "Liquide vaisselle", "Produit sol", "Lingettes", "Eponge X3", "Lavette X3", "Lessive", "Sacs poubelle 50 L", "Sacs poubelle 10L", "éponge", "liquide rincage", "Sel lave-vaisselle", "Tablette lave-vaisselle"],
-      "Surgelés": ["Pommes risolées 1kg", "Frites", "Potetoes", "Épinards", "Crocquette ABC"],
-      "Viande": ["Viande", "Volaille - escalope", "Volaile - éguilettes", "Porc", "Boeuf", "Viande hachée", "Veau", "Cordons Bleus ind.", "Dinde"]
-    };
+    const productsByCategory = [
+      { category: "Boulangerie", items: ["Baguette","Pain de mie","Pain céréal","Goffre","Petit pain","Croissant"] },
+      { category: "Petit déjeuner & Confiserie", items: ["Oeuf","Gâteaux PDJ","Bonbons","Nutella","Confiture"] },
+      { category: "Boissons", items: ["Café","Sirop","Soda canette","Jus de fruits","Crémant","Eaux minérales","Champagne"] },
+      { category: "Charcuterie", items: ["Jambon","Lardons","Knacks","Saucisse"] },
+      { category: "Légumes & Surgelés", items: ["Ratatouille","Champignons","Petit-pois carottes","Petit-pois","Haricots verts","Haricots beurre","Maïs"] },
+      { category: "Ustensiles & Emballages", items: ["Film alimentaire","Papier cuisson","Papier aluminium","Sac congélation","Essuie-tout X3","Serviettes papier","Filtre à café","Sacs poubelle 50 L","Emballage cadeaux"] },
+      { category: "Condiments & Épices", items: ["Sel fin","Sel gros 1kg","Vinaigre blanc","Vinaigre balsamique","Vinaigre salade","Huile olive","Huile tournesol","Persil","Basilic","Herbes de Provence","Poivre","Sauce tomate","Ketchup","Mayonnaise","Andalouse","Samouraï","Moutarde"] },
+      { category: "Céréales & Légumineuses", items: ["Pois cassés","Lentilles","Spaghetti","Pâtes","Riz","Spätzle","Purée","Semoule","Gnocchi"] },
+      { category: "Fruits & Légumes frais", items: ["Pomme","Banane","Kiwi","Avocat","Citron","Citron vert","Brocoli","Carottes","Courgettes","Oignons","Pommes de terre","Patate douce","Salade verte","Concombre","Tomate","Potiron"] },
+      { category: "Hygiène & Soin", items: ["Gel douche","Dentifrice","Brosse à dents","Gel à raser","Déo","Shampooing","Après-shampooing","Papier toilette","Mouchoirs","Serviettes hygiéniques + Tampons + Lingettes","Laque"] },
+      { category: "Entretien & Ménage", items: ["Produit vitre","Produit WC","Produit dégraissant","Liquide vaisselle","Produit sol","Lingettes","Éponge X3","Lavette X3","Lessive","Sacs poubelle 10L","Liquide rinçage","Sel lave-vaisselle","Tablette lave-vaisselle"] },
+      { category: "Produits Laitiers", items: ["Crème fraîche","Beurre","Margarine","Yaourt","Yaourt à boire","Kiri","Lait","Fromage blanc","Fromage râpé"] },
+      { category: "Surgelés", items: ["Pommes rissolées 1kg","Frites","Potatoes","Épinards","Croquettes ABC"] },
+      { category: "Viandes & Volaille", items: ["Viande","Volaille - Escalope","Volaille - Émincettes","Porc","Boeuf","Viande hachée","Veau","Cordons Bleus individuels","Dinde"] },
+      { category: "Soupes & Sandwichs", items: ["Soupe","Sandwich"] }
+    ];
 
-    const container = document.getElementById("listeCourses");
+    const STORAGE_KEY = 'shopping_list_state_v2';
+    function createItem(name, categoryId) {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'item';
 
-    for (const [categorie, items] of Object.entries(produits)) {
-      const section = document.createElement("div");
-      section.className = "category";
-      const title = document.createElement("h2");
-      title.textContent = categorie;
-      section.appendChild(title);
+      const cbWrap = document.createElement('div');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.className = 'checkbox';
+      checkbox.id = `chk-${categoryId}-${name}`;
+      checkbox.addEventListener('change', saveState);
+      cbWrap.appendChild(checkbox);
 
-      items.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
+      const label = document.createElement('label');
+      label.htmlFor = checkbox.id;
+      label.className = 'item-label';
+      label.textContent = name;
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.onchange = () => {
-          quantityInput.disabled = !checkbox.checked;
-        };
+      const qtyDiv = document.createElement('div');
+      qtyDiv.className = 'qty';
+      const qty = document.createElement('input');
+      qty.type = 'number';
+      qty.value = 1;
+      qty.min = 1;
+      qty.addEventListener('input', saveState);
+      qtyDiv.appendChild(qty);
 
-        const label = document.createElement("label");
-        label.textContent = item;
-
-        const quantityInput = document.createElement("input");
-        quantityInput.type = "number";
-        quantityInput.value = 1;
-        quantityInput.min = 1;
-        quantityInput.disabled = true;
-
-        div.appendChild(checkbox);
-        div.appendChild(label);
-        div.appendChild(quantityInput);
-        section.appendChild(div);
-      });
-
-      container.appendChild(section);
+      itemDiv.appendChild(cbWrap);
+      itemDiv.appendChild(label);
+      itemDiv.appendChild(qtyDiv);
+      return {element: itemDiv, checkbox, qty};
     }
+
+    function buildList() {
+      const listDiv = document.getElementById('list');
+      listDiv.innerHTML = '';
+      productsByCategory.forEach((cat, idx) => {
+        const catDiv = document.createElement('div');
+        catDiv.className = 'category';
+        const header = document.createElement('div');
+        header.className = 'category-header';
+        const h2 = document.createElement('h2');
+        h2.textContent = cat.category;
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.gap = '6px';
+        const all = document.createElement('button');
+        all.className = 'btn btn-sm';
+        all.textContent = 'Tout';
+        all.onclick = () => toggleCategory(idx, true);
+        const none = document.createElement('button');
+        none.className = 'btn btn-sm';
+        none.textContent = 'Rien';
+        none.onclick = () => toggleCategory(idx, false);
+        actions.appendChild(all);
+        actions.appendChild(none);
+        header.appendChild(h2);
+        header.appendChild(actions);
+        catDiv.appendChild(header);
+
+        const itemsWrapper = document.createElement('div');
+        itemsWrapper.className = 'items';
+        cat.items.forEach(name => {
+          const {element, checkbox, qty} = createItem(name, idx);
+          itemsWrapper.appendChild(element);
+        });
+        catDiv.appendChild(itemsWrapper);
+        listDiv.appendChild(catDiv);
+      });
+      restoreState();
+    }
+
+    function saveState() {
+      const data = {};
+      productsByCategory.forEach((cat, ci) => {
+        cat.items.forEach(name => {
+          const cb = document.getElementById(`chk-${ci}-${name}`);
+          const qty = cb ? cb.parentElement.parentElement.querySelector('input[type=number]') : null;
+          data[`${ci}||${name}`] = {checked: cb?.checked || false, qty: qty ? parseInt(qty.value)||1 : 1};
+        });
+      });
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) { console.warn('Impossible de sauvegarder'); }
+    }
+
+    function restoreState() {
+      let data = {};
+      try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch(e){ }
+      productsByCategory.forEach((cat, ci) => {
+        cat.items.forEach(name => {
+          const key = `${ci}||${name}`;
+          const stored = data[key];
+          const cb = document.getElementById(`chk-${ci}-${name}`);
+          if (cb && stored) {
+            cb.checked = stored.checked;
+            const qty = cb.parentElement.parentElement.querySelector('input[type=number]');
+            if (qty) qty.value = stored.qty;
+          }
+        });
+      });
+    }
+
+    function toggleCategory(categoryIndex, state) {
+      productsByCategory[categoryIndex].items.forEach(name => {
+        const cb = document.getElementById(`chk-${categoryIndex}-${name}`);
+        if (cb) cb.checked = state;
+      });
+      saveState();
+    }
+
+    function selectAll(state) {
+      productsByCategory.forEach((cat, ci) => toggleCategory(ci, state));
+    }
+
+    function resetAll() {
+      localStorage.removeItem(STORAGE_KEY);
+      buildList();
+    }
+
+    // initial render
+    buildList();
   </script>
 </body>
 </html>
